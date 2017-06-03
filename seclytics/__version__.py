@@ -1,0 +1,8 @@
+__title__ = 'seclytics'
+__description__ = 'Seclytics Threat Intelligence API.'
+__url__ = 'https://www.seclytics.com/'
+__version__ = '1.0.0'
+__author__ = 'Jason pope'
+__author_email__ = 'jpope@seclytics.com'
+__license__ = 'TBD'
+__copyright__ = 'Copyright 2017 Seclytics'
