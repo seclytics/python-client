@@ -34,6 +34,7 @@ with open(path.join(here, 'seclytics', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
 requires = ['requests', 'texttable']
+test_require = requires + ['pytest']
 
 setup(
     name=about['__title__'],
@@ -55,5 +56,5 @@ setup(
     packages=find_packages(),
     license=about['__license__'],
     install_requires=requires,
-    tests_require=requires,
+    tests_require=test_require,
 )
