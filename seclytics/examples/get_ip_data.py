@@ -23,8 +23,11 @@ if __name__ == '__main__':
     attributes = ['connections', 'predictions', 'passive_dns']
 
     # Request the threat intel
-    ip = '80.82.67.191'
+    ip = '218.255.67.239'
     report = client.ip(ip, attributes=attributes)
+    if report.predicted:
+        print("This IP was Predicted to be Malicious")
+
 
     # Who reported this?
     print("Reported By", report.reported_by)

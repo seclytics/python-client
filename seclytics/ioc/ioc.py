@@ -51,7 +51,24 @@ class Ioc(object):
     @property
     def passive_dns(self):
         '''Passive DNS data for this IOC'''
-        return self.intel[u'passive_dns']
+        if u'passive_dns' in self.intel:
+            return self.intel[u'passive_dns']
+
+    @property
+    def predictions(self):
+        '''Predictions that apply to this IOC'''
+        if u'predictions' in self.intel:
+            return self.intel[u'predictions']
+
+    @property
+    def predicted(self):
+        '''Simple check to see if IOC is predicted
+
+        Returns:
+            bool: True if predicted, False otherwise.
+        '''
+        predictions = self.predictions
+        return predictions is not None and len(predictions) > 0
 
     @property
     def ioc_type(self):
