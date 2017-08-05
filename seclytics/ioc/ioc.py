@@ -1,5 +1,6 @@
 class Ioc(object):
-    def __init__(self, intel):
+    def __init__(self, client, intel):
+        self.client = client
         self.intel = intel
 
     @property
@@ -80,3 +81,23 @@ class Ioc(object):
     def ioc_id(self):
         '''The IOC'''
         return self.intel[u'id']
+    
+    def record_threat_data(self, category=None, reason=None, feed=None):
+        data = {'classification': 'malicious'}
+        if category:
+            data['category'] = category
+        if reason:
+            data['reason'] = reason
+        if feed:
+            data['feed'] = feed
+        path = '/%ss/%s' % (self.ioc_type, self.ioc_id)
+        return self.client._post_data(path, data)
+
+    def mark_as_good(self, reason=None, feed=None):
+        data = {'classification': 'benign'}
+        if reason:
+            data['reason'] = reason
+        if feed:
+            data['feed'] = feed
+        path = '/%ss/%s' % (self.ioc_type, self.ioc_id)
+        return self.client._post_data(path, data)

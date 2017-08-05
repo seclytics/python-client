@@ -5,9 +5,8 @@ from pprint import pprint
 
 
 class Seclytics(object):
-    base_url = 'https://api.seclytics.com'
-
-    def __init__(self, access_token):
+    def __init__(self, access_token, api_url=None):
+        self.base_url = api_url or 'https://api.seclytics.com'
         self.access_token = access_token
         self.session = requests.Session()
 
@@ -18,6 +17,19 @@ class Seclytics(object):
         if 'attributes' in params:
             params[u'attributes'] = ','.join(params[u'attributes'])
         response = self.session.get(url, params=params)
+        if response.status_code == 401:
+            raise InvalidAccessToken()
+        if response.status_code != 200:
+            print(response.status_code)
+            # TODO raise server error
+            return None
+        data = response.json()
+        return data
+
+    def _post_data(self, path, data={}):
+        url = ''.join((self.base_url, path))
+        params = {u'access_token': self.access_token}
+        response = self.session.post(url, params=params, json=data)
         if response.status_code == 401:
             raise InvalidAccessToken()
         if response.status_code != 200:
@@ -39,23 +51,23 @@ class Seclytics(object):
 
     def ip(self, ip, attributes=[]):
         response = self._ioc_show('ips', ip)
-        return Node(Ip(response))
+        return Node(Ip(self, response))
 
     def cidr(self, cidr, attributes=[]):
         response = self._ioc_show('cidrs', cidr)
-        return Node(Cidr(response))
+        return Node(Cidr(self, response))
 
     def asn(self, asn, attributes=[]):
         response = self._ioc_show('asns', asn)
-        return Node(Asn(response))
+        return Node(Asn(self, response))
 
     def host(self, host, attributes=[]):
         response = self._ioc_show('hosts', host)
-        return Node(Host(response))
+        return Node(Host(self, response))
 
     def file(self, file_hash, attributes=[]):
         response = self._ioc_show('files', file_hash)
-        return Node(FileHash(response))
+        return Node(FileHash(self, response))
 
     def ips(self, ips=[], attributes=[]):
         path = u'/ips'
@@ -65,7 +77,7 @@ class Seclytics(object):
         response = self._get_request(path, params)
         if 'data' in response:
             for row in response['data']:
-                yield Node(Ip(row))
+                yield Node(Ip(self, row))
 
 
 class Node(object):
@@ -97,12 +109,12 @@ class Node(object):
             return
         for edge in self.intel['connections']:
             if edge['type'] == 'ip':
-                yield Node(Ip(edge))
+                yield Node(Ip(self, edge))
             elif edge['type'] == 'host':
-                yield Node(Host(edge))
+                yield Node(Host(self, edge))
             elif edge['type'] == 'file':
-                yield Node(FileHash(edge))
+                yield Node(FileHash(self, edge))
             elif edge['type'] == 'cidr':
-                yield Node(Cidr(edge))
+                yield Node(Cidr(self, edge))
             elif edge['type'] == 'asn':
-                yield Node(Asn(edge))
+                yield Node(Asn(self, edge))

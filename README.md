@@ -33,3 +33,4 @@ report.passive_dns
 * Add methods for multiple IOC lookups 
 * Wrap passive dns results with object
 * Wrap prediction with object
+* Create CLI app
