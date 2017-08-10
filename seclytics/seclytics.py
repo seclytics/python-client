@@ -1,5 +1,5 @@
 import requests
-from .exceptions import InvalidAccessToken
+from .exceptions import InvalidAccessToken, OverQuota
 from .ioc import Ip, Cidr, Asn, Host, FileHash
 from pprint import pprint
 
@@ -21,7 +21,9 @@ class Seclytics(object):
         response = self.session.get(url, params=params)
         if response.status_code == 401:
             raise InvalidAccessToken()
-        if response.status_code != 200:
+        elif response.status_code == 429:
+            raise OverQuota()
+        elif response.status_code != 200:
             print(response.status_code)
             # TODO raise server error
             return None
@@ -34,7 +36,9 @@ class Seclytics(object):
         response = self.session.post(url, params=params, json=data)
         if response.status_code == 401:
             raise InvalidAccessToken()
-        if response.status_code != 200:
+        elif response.status_code == 429:
+            raise OverQuota()
+        elif response.status_code != 200:
             print(response.status_code)
             # TODO raise server error
             return None
