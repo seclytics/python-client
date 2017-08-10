@@ -41,3 +41,9 @@ if __name__ == '__main__':
     status = report.mark_as_good(reason="Google DNS")
     pprint(report.intel)
     print(status)
+
+    # Record Benign Host
+    hostname = 'seclytics.com'
+    report = client.host(hostname, attributes=attributes)
+    status = report.mark_as_good(reason="Seclytics Homepage")
+    pprint(report.intel)
