@@ -9,6 +9,11 @@ if __name__ == '__main__':
     parser.add_option("--access_token",
                       action="store", type="string", dest="access_token",
                       help="API acccess_token")
+    parser.add_option("--api_url",
+                      action="store", type="string", dest="api_url",
+                      default='https://api.seclytics.com/',
+                      help="API Hostname")
+
     (options, args) = parser.parse_args()
 
     if options.access_token is None:
@@ -16,11 +21,12 @@ if __name__ == '__main__':
 
     # initialize the client with your token
     access_token = options.access_token
-    client = Seclytics(access_token=access_token)
+    api_url = options.api_url
+    client = Seclytics(access_token=access_token, api_url=api_url)
 
     # Set the attributes you want
     # https://dashboard.seclytics.com/docs#Attributes
-    attributes = ['connections', 'predictions', 'passive_dns']
+    attributes = ['connections', 'predictions', 'passive_dns', 'prediction']
 
     # Request the threat intel
     ip = '218.255.67.239'
@@ -48,5 +54,12 @@ if __name__ == '__main__':
     print(table.draw())
 
     # The raw JSON reponse is available via the intel attribute
-    print("JSON Response")
-    pprint(report.intel)
+    # print(report.intel)
+
+    ips = ['218.255.67.239', '141.255.151.79']
+    reports = client.ips(ips)
+    for r in reports:
+        if r.predicted:
+            print("%s was preditected to be malicious" % r.ioc_id)
+        else:
+            print("%s was not predicted" % r.ioc_id)

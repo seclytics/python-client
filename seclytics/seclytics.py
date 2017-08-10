@@ -16,6 +16,8 @@ class Seclytics(object):
         params[u'access_token'] = self.access_token
         if 'attributes' in params:
             params[u'attributes'] = ','.join(params[u'attributes'])
+        if u'ids' in params and type(params[u'ids']) == list:
+            params[u'ids'] = ','.join(params[u'ids'])
         response = self.session.get(url, params=params)
         if response.status_code == 401:
             raise InvalidAccessToken()
@@ -69,16 +71,27 @@ class Seclytics(object):
         response = self._ioc_show('files', file_hash)
         return Node(FileHash(self, response))
 
-    def ips(self, ips=[], attributes=[]):
+    def ips(self, ips, attributes=None):
         path = u'/ips'
         params = {u'ids': ips}
-        if len(attributes) > 0:
+        if attributes:
             params[u'attributes'] = attributes
         response = self._get_request(path, params)
-        if 'data' in response:
-            for row in response['data']:
-                yield Node(Ip(self, row))
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(Ip(self, row))
 
+    def hosts(self, ips, attributes=None):
+        path = u'/hosts'
+        params = {u'ids': ips}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(Host(self, row))
 
 class Node(object):
     '''
