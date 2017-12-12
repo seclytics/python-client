@@ -14,6 +14,11 @@ class Ioc(object):
         reported_by = self.intel[u'context'][u'categories'].keys()
         return reported_by
 
+    @property
+    def has_threat_intel(self):
+        '''Returns True if we have intel or False if there is none'''
+        return len(self.reported_by) > 0
+
     def _namespaced_values(self, kind):
         '''Extract all the namespaced values (internal use)
         To keep track of what source said what each field in the context is

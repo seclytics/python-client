@@ -31,6 +31,8 @@ if __name__ == '__main__':
     # Request the threat intel
     ip = '218.255.67.239'
     report = client.ip(ip, attributes=attributes)
+    if report.has_threat_intel:
+        print("This IP has threat intel")
     if report.predicted:
         print("This IP was Predicted to be Malicious")
 
