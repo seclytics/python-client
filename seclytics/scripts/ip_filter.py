@@ -57,9 +57,9 @@ def main():
         for line in f:
             line = line.strip()
             if ip_threat_intel.contains(line):
-                if options.malicious and malicious_ips.contains(line):
+                if options.predicted and predicted_ips.contains(line):
                     print(line)
-                elif options.predicted and predicted_ips.contains(line):
+                elif options.malicious and malicious_ips.contains(line):
                     print(line)
                 elif options.suspicious:
                     print(line)
