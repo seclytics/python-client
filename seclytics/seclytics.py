@@ -1,7 +1,6 @@
 import requests
 from .exceptions import InvalidAccessToken, OverQuota
 from .ioc import Ip, Cidr, Asn, Host, FileHash
-from pprint import pprint
 
 
 class Seclytics(object):
@@ -54,6 +53,28 @@ class Seclytics(object):
         if 'error' in response:
             return RuntimeError(response['error']['message'])
         return response
+
+    def bulk_api_download(self, name, data_dir=None):
+        params = {u'access_token': self.access_token}
+        filename = name
+        if data_dir is not None:
+            filename = '/'.join([data_dir, filename])
+        path = '/bulk/%s' % name 
+        url = ''.join((self.base_url, path))
+        response = self.session.get(url, params=params, stream=True)
+
+        if response.status_code == 401:
+            raise InvalidAccessToken()
+        elif response.status_code == 429:
+            raise OverQuota()
+        elif response.status_code != 200:
+            raise RuntimeError(response.status)
+
+        with open(filename, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=1024): 
+                if chunk:
+                    f.write(chunk)
+        return filename 
 
     def ip(self, ip, attributes=[]):
         response = self._ioc_show('ips', ip)

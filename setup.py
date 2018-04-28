@@ -33,7 +33,7 @@ about = {}
 with open(path.join(here, 'seclytics', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
-requires = ['requests', 'texttable']
+requires = ['requests', 'texttable', 'pprint', 'pybloomfiltermmap']
 test_require = requires + ['pytest']
 
 setup(
@@ -48,7 +48,9 @@ setup(
 
     # The project's main homepage.
     url=about['__url__'],
-
+    entry_points = {
+        'console_scripts': ['seclytics_db_download=seclytics.scripts.download_db:main'],
+    },
     # Author details
     cmdclass={'test': PyTest},
     author=about['__author__'],
