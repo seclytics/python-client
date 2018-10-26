@@ -4,7 +4,9 @@ Python module for interacting with the Seclytics API.
 
 ## Installation
 
+```bash
 pip install git+git://github.com/seclytics/python-client.git --upgrade
+```
 
 
 ## Usage
