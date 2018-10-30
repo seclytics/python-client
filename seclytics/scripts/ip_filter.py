@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from .. import Seclytics
 from ..portable_bloom import PortableBloom
+from ..bloom_category import BloomCategory, Category
 from optparse import OptionParser
 import sys
 
@@ -49,20 +50,16 @@ def main():
        not options.suspicious):
         parser.error("Please specify at least one category")
 
-    # load bloom filters
-    malicious_ips = PortableBloom('/tmp/malicious-ips.bloom')
-    predicted_ips = PortableBloom('/tmp/predicted-ips.bloom')
-    ip_threat_intel = PortableBloom('/tmp/ip-threat-intel.bloom')
+    bloom = BloomCategory(malicious_path='/tmp/malicious-ips.bloom',
+                          predicted_path='/tmp/predicted-ips.bloom',
+                          has_intel_path='/tmp/ip-threat-intel.bloom')
     with FileInput(sys.stdin) as f:
         for line in f:
-            line = line.strip()
-            if ip_threat_intel.contains(line):
-                if options.predicted and predicted_ips.contains(line):
-                    print(line)
-                elif options.malicious and malicious_ips.contains(line):
-                    print(line)
-                elif options.suspicious:
-                    print(line)
+            ip = line.strip()
+            if bloom.check_ip(ip, check_malicious=options.malicious,
+                              check_predicted=options.predicted,
+                              check_suspicious=options.suspicious):
+                print(ip)
 
 
 if __name__ == '__main__':
