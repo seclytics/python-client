@@ -45,7 +45,7 @@ Reads data from STDIN and only prints if it matches on the specified flags
 
 ```bash
 $ echo '139.47.251.221' | python -m seclytics.scripts.ip_filter --suspicious --malicious --predicted
-> 
+> 139.47.251.221
 ```
 
 IP that's malicious but not predicted (outputs nothing)
