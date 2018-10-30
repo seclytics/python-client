@@ -15,8 +15,9 @@ class Seclytics(object):
         params[u'access_token'] = self.access_token
         if 'attributes' in params:
             params[u'attributes'] = ','.join(params[u'attributes'])
-        if u'ids' in params and type(params[u'ids']) == list:
-            params[u'ids'] = ','.join(params[u'ids'])
+        if u'ids' in params:
+            if(type(params[u'ids']) == list or type(params[u'ids']) == set):
+                params[u'ids'] = ','.join(params[u'ids'])
         response = self.session.get(url, params=params)
         if response.status_code == 401:
             raise InvalidAccessToken()

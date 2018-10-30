@@ -75,6 +75,12 @@ Finding predicted IPs in a list of IPs.
 $ curl http://www.malwaredomainlist.com/hostslist/ip.txt 2> /dev/null | python -m seclytics.scripts.ip_filter --predicted 
 ```
 
+Using bloom filter to filter before querying API for more info
+
+```bash
+curl http://www.malwaredomainlist.com/hostslist/ip.txt 2> /dev/null | python -m seclytics.scripts.ip_filter --predicted | python -m seclytics.scripts.ip_enrich --access_token YOUR_ACCESS_TOKEN | jq .context.source_urls
+```
+
 ## TODO
 
 * Add documentation
