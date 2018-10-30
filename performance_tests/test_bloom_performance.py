@@ -20,7 +20,6 @@ bloom = BloomCategory(malicious_path='/tmp/malicious-ips.bloom',
 def test():
     for ip in ips:
         bloom.check_ip(ip)
-    # benchmark(bulk_features_pandas_ip_metadata, ips)
 
 
 if __name__ == '__main__':
