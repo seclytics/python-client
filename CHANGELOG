@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+
+## [0.1.3] - 2018-04-27
+### Changed
+- Improved bloom category precedence
+- Added tox testing
+
 ## [0.1.2] - 2018-04-27
 ### Changed
 - Modified precedence for ip_filter script 
