@@ -12,9 +12,9 @@ for i in range(0, run_count):
     addr = str(IPv4Address(bits))
     ips.append(addr)
 
-bloom = BloomCategory(malicious_path='/tmp/malicious-ips.bloom',
-                      predicted_path='/tmp/predicted-ips.bloom',
-                      has_intel_path='/tmp/ip-threat-intel.bloom')
+bloom = BloomCategory(malicious_path=u'/tmp/malicious-ips.bloom',
+                      predicted_path=u'/tmp/predicted-ips.bloom',
+                      has_intel_path=u'/tmp/ip-threat-intel.bloom')
 
 
 def test():

@@ -7,3 +7,4 @@
 *.pyc
 *.swp
 .eggs/
+.pytest_cache/

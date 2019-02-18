@@ -17,10 +17,9 @@ class BloomCategory(object):
 
     def check_ip(self, ip, check_suspicious=True, check_predicted=True,
                  check_malicious=True):
-        if self.has_intel.contains(ip):
-            if check_malicious and self.malicious.contains(ip):
-                return Category.malicious
-            if check_predicted and self.predicted.contains(ip):
-                return Category.predicted
-            if check_suspicious:
-                return Category.suspicious
+        if check_predicted and self.predicted.contains(ip):
+            return Category.predicted
+        elif check_malicious and self.malicious.contains(ip):
+            return Category.malicious
+        elif check_suspicious and self.has_intel.contains(ip):
+            return Category.suspicious
