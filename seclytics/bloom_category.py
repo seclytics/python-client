@@ -17,9 +17,16 @@ class BloomCategory(object):
 
     def check_ip(self, ip, check_suspicious=True, check_predicted=True,
                  check_malicious=True):
-        if check_predicted and self.predicted.contains(ip):
-            return Category.predicted
-        elif check_malicious and self.malicious.contains(ip):
-            return Category.malicious
-        elif check_suspicious and self.has_intel.contains(ip):
-            return Category.suspicious
+        value = ip
+        if type(value) == str:
+            value = unicode(ip)
+
+        # To reduce bloom filter checks we store ALL ips in has_intel
+        # This way the majority of IPs will only have to check once.
+        if self.has_intel.contains(value):
+            if check_predicted and self.predicted.contains(value):
+                return Category.predicted
+            elif check_malicious and self.malicious.contains(value):
+                return Category.malicious
+            elif check_suspicious:
+                return Category.suspicious
