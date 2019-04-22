@@ -24,7 +24,6 @@ class Seclytics(object):
         elif response.status_code == 429:
             raise OverQuota()
         elif response.status_code != 200:
-            print(response.status_code)
             # TODO raise server error
             return None
         data = response.json()
@@ -39,7 +38,6 @@ class Seclytics(object):
         elif response.status_code == 429:
             raise OverQuota()
         elif response.status_code != 200:
-            print(response.status_code)
             # TODO raise server error
             return None
         data = response.json()
@@ -60,7 +58,7 @@ class Seclytics(object):
         filename = name
         if data_dir is not None:
             filename = '/'.join([data_dir, filename])
-        path = '/bulk/%s' % name 
+        path = '/bulk/%s' % name
         url = ''.join((self.base_url, path))
         response = self.session.get(url, params=params, stream=True)
 
@@ -72,29 +70,29 @@ class Seclytics(object):
             raise RuntimeError(response.status)
 
         with open(filename, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=1024): 
+            for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
-        return filename 
+        return filename
 
-    def ip(self, ip, attributes=[]):
-        response = self._ioc_show('ips', ip)
+    def ip(self, ip, attributes=None):
+        response = self._ioc_show('ips', ip, attributes=attributes)
         return Node(Ip(self, response))
 
-    def cidr(self, cidr, attributes=[]):
-        response = self._ioc_show('cidrs', cidr)
+    def cidr(self, cidr, attributes=None):
+        response = self._ioc_show('cidrs', cidr, attributes=attributes)
         return Node(Cidr(self, response))
 
-    def asn(self, asn, attributes=[]):
-        response = self._ioc_show('asns', asn)
+    def asn(self, asn, attributes=None):
+        response = self._ioc_show('asns', asn, attributes=attributes)
         return Node(Asn(self, response))
 
-    def host(self, host, attributes=[]):
-        response = self._ioc_show('hosts', host)
+    def host(self, host, attributes=None):
+        response = self._ioc_show('hosts', host, attributes=attributes)
         return Node(Host(self, response))
 
-    def file(self, file_hash, attributes=[]):
-        response = self._ioc_show('files', file_hash)
+    def file(self, file_hash, attributes=None):
+        response = self._ioc_show('files', file_hash, attributes=attributes)
         return Node(FileHash(self, response))
 
     def ips(self, ips, attributes=None):
@@ -118,6 +116,7 @@ class Seclytics(object):
             return
         for row in response['data']:
             yield Node(Host(self, row))
+
 
 class Node(object):
     '''
