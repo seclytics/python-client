@@ -43,10 +43,10 @@ class Seclytics(object):
         data = response.json()
         return data
 
-    def _ioc_show(self, ioc_path, ioc_id, attributes=[]):
+    def _ioc_show(self, ioc_path, ioc_id, attributes=None):
         path = u'/%s/%s' % (ioc_path, ioc_id)
         params = {}
-        if len(attributes) > 0:
+        if attributes:
             params[u'attributes'] = attributes
         response = self._get_request(path, params)
         if 'error' in response:
