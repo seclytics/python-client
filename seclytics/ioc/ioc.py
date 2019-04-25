@@ -1,6 +1,11 @@
+from datetime import datetime
+
+
 class Ioc(object):
+
     def __init__(self, client, intel):
         self.client = client
+        self.time_fmt = u"%Y-%m-%dT%H:%M:%S"
         self.intel = intel
 
     @property
@@ -28,9 +33,10 @@ class Ioc(object):
         if 'context' not in self.intel:
             return values
         context = self.intel[u'context']
-        values = set([v
-                     for src, value in context[kind].items()
-                     for v in value])
+        if kind in context:
+            values = set([v
+                         for src, value in context[kind].items()
+                         for v in value])
         return list(values)
 
     @property
@@ -75,6 +81,26 @@ class Ioc(object):
         '''
         predictions = self.predictions
         return predictions is not None and len(predictions) > 0
+
+    @property
+    def predicted_at(self):
+        '''The current predicted_at'''
+        if u'prediction' not in self.intel:
+            return None
+        prediction = self.intel[u'prediction']
+        return datetime.strptime(prediction[u'predicted_at'], self.time_fmt)
+
+    
+    @property
+    def first_reported_at(self):
+        '''The first time this IOC has been seen by our threat intel'''
+
+        if u'history' not in self.intel:
+            return None 
+        history = self.intel[u'history']
+        if u'first_seen_at' not in history:
+            return None
+        return datetime.strptime(history[u'first_seen_at'], self.time_fmt)
 
     @property
     def ioc_type(self):
