@@ -1,5 +1,5 @@
 import requests
-from .exceptions import InvalidAccessToken, OverQuota
+from .exceptions import InvalidAccessToken, OverQuota, ApiError
 from .ioc import Ip, Cidr, Asn, Host, FileHash
 
 
@@ -24,8 +24,10 @@ class Seclytics(object):
         elif response.status_code == 429:
             raise OverQuota()
         elif response.status_code != 200:
-            # TODO raise server error
-            return None
+            msg = "Non 200 Response"
+            if response.text:
+                msg = response.text
+            raise ApiError(msg)
         data = response.json()
         return data
 
@@ -38,8 +40,10 @@ class Seclytics(object):
         elif response.status_code == 429:
             raise OverQuota()
         elif response.status_code != 200:
-            # TODO raise server error
-            return None
+            msg = "Non 200 Response"
+            if response.text:
+                msg = response.text
+            raise ApiError(msg)
         data = response.json()
         return data
 
@@ -96,7 +100,7 @@ class Seclytics(object):
         return Node(FileHash(self, response))
 
     def ips(self, ips, attributes=None):
-        path = u'/ips'
+        path = u'/ips/'
         params = {u'ids': ips}
         if attributes:
             params[u'attributes'] = attributes
@@ -107,7 +111,7 @@ class Seclytics(object):
             yield Node(Ip(self, row))
 
     def hosts(self, ips, attributes=None):
-        path = u'/hosts'
+        path = u'/hosts/'
         params = {u'ids': ips}
         if attributes:
             params[u'attributes'] = attributes

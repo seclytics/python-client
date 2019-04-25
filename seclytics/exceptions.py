@@ -3,3 +3,6 @@ class InvalidAccessToken(Exception):
 
 class OverQuota(Exception):
     """We got a 429 Too Many Requests"""
+
+class ApiError(Exception):
+    """General API Error"""
