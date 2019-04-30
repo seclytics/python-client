@@ -112,6 +112,12 @@ class Ioc(object):
     def ioc_id(self):
         '''The IOC'''
         return self.intel[u'id']
+
+    @property
+    def whitelist(self):
+        '''Returns the whitelist message'''
+        if u'whitelist' in self.intel:
+            return self.intel[u'whitelist']
     
     def record_threat_data(self, category=None, reason=None, feed=None):
         data = {'classification': 'malicious'}
