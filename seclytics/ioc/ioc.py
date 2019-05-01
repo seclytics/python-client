@@ -1,4 +1,5 @@
 from datetime import datetime
+from six import iteritems
 
 
 class Ioc(object):
@@ -118,6 +119,27 @@ class Ioc(object):
         '''Returns the whitelist message'''
         if u'whitelist' in self.intel:
             return self.intel[u'whitelist']
+    
+    @property
+    def rankings(self):
+        if u'rankings' in self.intel:
+            return self.intel[u'rankings']
+
+    def min_ranking(self, allowed_lists=None):
+        rankings = self.rankings
+        if rankings is None:
+            return None
+        
+        min_ranking = None
+        for list_name, value in iteritems(rankings):
+            if allowed_lists and list_name not in allowed_lists:
+                continue
+            list_min = value.get(u'min', None)
+            if list_min and (min_ranking is None or int(list_min) < min_ranking):
+                min_ranking = int(list_min)
+
+        return min_ranking
+        
     
     def record_threat_data(self, category=None, reason=None, feed=None):
         data = {'classification': 'malicious'}
