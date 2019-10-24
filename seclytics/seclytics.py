@@ -1,13 +1,17 @@
 import requests
+from urlparse import urlparse
+from hashlib import sha1
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
-from .ioc import Ip, Cidr, Asn, Host, FileHash
+from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
 
 
 class Seclytics(object):
-    def __init__(self, access_token, api_url=None):
+    def __init__(self, access_token, api_url=None, verify_ssl=False, http_proxy=None):
         self.base_url = api_url or 'https://api.seclytics.com'
         self.access_token = access_token
         self.session = requests.Session()
+        self.session.verify = verify_ssl
+        self.session.proxies = {'http': http_proxy, 'https': http_proxy}
 
     def _get_request(self, path, params):
         url = ''.join((self.base_url, path))
@@ -99,6 +103,10 @@ class Seclytics(object):
         response = self._ioc_show('files', file_hash, attributes=attributes)
         return Node(FileHash(self, response))
 
+    def domain(self, domain, attributes=None):
+        response = self._ioc_show('domains', domain, attributes=attributes)
+        return Node(Domain(self, response))
+
     def ips(self, ips, attributes=None):
         path = u'/ips/'
         params = {u'ids': ips}
@@ -120,6 +128,86 @@ class Seclytics(object):
             return
         for row in response['data']:
             yield Node(Host(self, row))
+
+    def cidrs(self, cidrs, attributes=None):
+        path = u'/cidrs/'
+        params = {u'ids': cidrs}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(Cidr(self, row))
+
+    def domains(self, domains, attributes=None):
+        path = u'/domains/'
+        params = {u'ids': domains}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(Domain(self, row))
+
+    def files(self, files, attributes=None):
+        path = u'/files/'
+        params = {u'ids': files}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(FileHash(self, row))
+
+    def urls(self, urls, attributes=None):
+        path = u'/urls/'
+        ids = str()
+        for url in urls.split(','):
+            parsed = urlparse(url.strip())
+            hashed_path = sha1(parsed.path).hexdigest()
+            hashed_query = sha1(parsed.query).hexdigest()
+            ids += "{}/{}/{},".format(parsed.hostname, hashed_path, hashed_query)
+        params = {u'ids': ids}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(Url(self, row))
+
+    def asns(self, asns, attributes=None):
+        path = u'/asns/'
+        params = {u'ids': asns}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(Asn(self, row))
+
+    def ips_to_host(self, hosts, attributes=None):
+        path = u'/hosts/live_dns/'
+        params = {u'ids': hosts}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        return response
+
+    def cidr_ips(self, cidr, attributes=None):
+        path = u'/cidrs/{}/ips/'.format(cidr)
+        params = {}
+        if attributes:
+            params[u'attributes'] = attributes
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node(Ip(self, row))
 
 
 class Node(object):
