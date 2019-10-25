@@ -8,3 +8,5 @@
 *.swp
 .eggs/
 .pytest_cache/
+build/
+dist/
