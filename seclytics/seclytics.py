@@ -1,8 +1,12 @@
 import requests
-from urlparse import urlparse
 from hashlib import sha1
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
 from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 
 class Seclytics(object):
