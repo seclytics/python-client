@@ -1,5 +1,5 @@
-import requests
 from hashlib import sha1
+import requests
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
 from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
 
@@ -10,19 +10,36 @@ except ImportError:
 
 
 class Seclytics(object):
-    def __init__(self, access_token, api_url=None, verify_ssl=False, http_proxy=None):
-        self.base_url = api_url or 'https://api.seclytics.com'
+    """Main Module for calling the Seclytics API
+
+    Attributes:
+        access_token (str): Seclytics Access Token
+        base_url (str): API URL
+        session (Session): requests session
+        session_proxy (str): proxy path"""
+
+    def __init__(self, access_token, api_url='https://api.seclytics.com',
+                 verify_ssl=True, http_proxy=None):
         self.access_token = access_token
+        self.base_url = api_url
         self.session = requests.Session()
         self.session.verify = verify_ssl
         self.session.proxies = {'http': http_proxy, 'https': http_proxy}
 
     def _get_request(self, path, params):
+        """Perform GET request for path and params
+
+        Adds access_token and handles API errors
+
+        Args:
+            path (str): the api path
+            params (str): api params
+        """
         url = ''.join((self.base_url, path))
         data = None
-        params[u'access_token'] = self.access_token
+        params['access_token'] = self.access_token
         if 'attributes' in params:
-            params[u'attributes'] = ','.join(params[u'attributes'])
+            params['attributes'] = ','.join(params['attributes'])
         if u'ids' in params:
             if(type(params[u'ids']) == list or type(params[u'ids']) == set):
                 params[u'ids'] = ','.join(params[u'ids'])
@@ -241,14 +258,14 @@ class Node(object):
     def connections(self):
         if 'connections' not in self.intel:
             return
+        type_to_module = {
+            'asn': Asn,
+            'cidr': Cidr,
+            'file': FileHash,
+            'host': Host,
+            'ip': Ip
+        }
         for edge in self.intel['connections']:
-            if edge['type'] == 'ip':
-                yield Node(Ip(self, edge))
-            elif edge['type'] == 'host':
-                yield Node(Host(self, edge))
-            elif edge['type'] == 'file':
-                yield Node(FileHash(self, edge))
-            elif edge['type'] == 'cidr':
-                yield Node(Cidr(self, edge))
-            elif edge['type'] == 'asn':
-                yield Node(Asn(self, edge))
+            edge_module = type_to_module.get(edge['type'])
+            if edge_module:
+                yield Node(edge_module(self, edge))
