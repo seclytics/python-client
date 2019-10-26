@@ -13,7 +13,7 @@ pip install git+git://github.com/seclytics/python-client.git --upgrade
 
 ```python
 from seclytics import Seclytics
-access_token = 'YOUR_TOKEN'
+access_token = 'YOUR_ACCESS_TOKEN'
 
 client = Seclytics(access_token=access_token)
 
@@ -36,7 +36,8 @@ report.passive_dns
 ### Download the bloom filters
 
 ```bash
-python -m seclytics.scripts.download_db --access_token YOUR_ACCESS_TOKEN --name predicted-ips.bloom,malicious-ips.bloom,ip-threat-intel.bloom --data-dir /tmp
+export SECLYTICS_ACCESS_TOKEN="YOUR_ACCESS_TOKEN"
+python -m seclytics.scripts.download_db --access_token $SECLYTICS_ACCESS_TOKEN --name predicted-ips.bloom,malicious-ips.bloom,ip-threat-intel.bloom --data-dir /tmp
 ```
 
 ### Command Line Filter Examples
@@ -78,7 +79,8 @@ $ curl http://www.malwaredomainlist.com/hostslist/ip.txt 2> /dev/null | python -
 Using bloom filter to filter before querying API for more info
 
 ```bash
-curl http://www.malwaredomainlist.com/hostslist/ip.txt 2> /dev/null | python -m seclytics.scripts.ip_filter --predicted | python -m seclytics.scripts.ip_enrich --access_token YOUR_ACCESS_TOKEN | jq .context.source_urls
+export SECLYTICS_ACCESS_TOKEN="YOUR_ACCESS_TOKEN"
+curl http://www.malwaredomainlist.com/hostslist/ip.txt 2> /dev/null | python -m seclytics.scripts.ip_filter --predicted | python -m seclytics.scripts.ip_enrich --access_token $SECLYTICS_ACCESS_TOKEN | jq .context.source_urls
 ```
 
 ## TODO
