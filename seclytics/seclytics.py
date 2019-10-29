@@ -19,12 +19,12 @@ class Seclytics(object):
         session_proxy (str): proxy path"""
 
     def __init__(self, access_token, api_url='https://api.seclytics.com',
-                 verify_ssl=True, http_proxy=None):
+                 session=None):
         self.access_token = access_token
         self.base_url = api_url
-        self.session = requests.Session()
-        self.session.verify = verify_ssl
-        self.session.proxies = {'http': http_proxy, 'https': http_proxy}
+        self.session = session
+        if not self.session:
+            self.session = requests.Session()
 
     def _get_request(self, path, params):
         """Perform GET request for path and params

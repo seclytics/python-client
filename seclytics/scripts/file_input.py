@@ -12,10 +12,14 @@ class FileInput(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         line = self.file.readline()
 
         if line is None or line == "":
             raise StopIteration
 
         return line
+
+    def next(self):
+        """For python2.7 compat"""
+        return self.__next__()

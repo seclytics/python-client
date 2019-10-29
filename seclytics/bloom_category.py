@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from .portable_bloom import PortableBloom
 from enum import Enum
+import six
 
 
 class Category(Enum):
@@ -18,7 +19,7 @@ class BloomCategory(object):
     def check_ip(self, ip, check_suspicious=True, check_predicted=True,
                  check_malicious=True):
         value = ip
-        if type(value) == str:
+        if type(value) == str and six.PY2:
             value = unicode(ip)
 
         # To reduce bloom filter checks we store ALL ips in has_intel
