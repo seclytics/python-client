@@ -2,6 +2,7 @@ from hashlib import sha1
 import requests
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
 from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
+from . import __version__
 
 try:
     from urllib.parse import urlparse
@@ -16,15 +17,20 @@ class Seclytics(object):
         access_token (str): Seclytics Access Token
         base_url (str): API URL
         session (Session): requests session
-        session_proxy (str): proxy path"""
-
+    """
     def __init__(self, access_token, api_url='https://api.seclytics.com',
                  session=None):
         self.access_token = access_token
         self.base_url = api_url
         self.session = session
+        client_user_agent = 'seclytics-python-client/{}'.format(
+            __version__.__version__
+        )
         if not self.session:
             self.session = requests.Session()
+            # set User-Agent to make notifying of new builds easier
+            self.session.headers.update({'User-Agent': client_user_agent})
+
 
     def _get_request(self, path, params):
         """Perform GET request for path and params
