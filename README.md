@@ -2,9 +2,18 @@
 
 Python module for interacting with the Seclytics API.
 
-## Installation
+## Installation for python 2.7
 
 ```bash
+pip install enum pybloomfiltermmap
+pip install git+git://github.com/seclytics/python-client.git --upgrade
+```
+
+## Installation for python 3.7
+
+```bash
+pip install cython
+pip install pybloomfiltermmap3
 pip install git+git://github.com/seclytics/python-client.git --upgrade
 ```
 
