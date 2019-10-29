@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-#
+## [0.2.0] - Unrelased
+### Added
+- Add more endpoints (URL, CIDR, Hosts, Domains) Thanks @mccluret
+### Changed
+- Set User Agent with python client version
+- Add python 3 compatibility
+- Fixed --data-dir path in scripts
+
 ## [0.1.5] - 2019-03-22
 ### Changed
 - Fixed custom attributes on individual IOCs
