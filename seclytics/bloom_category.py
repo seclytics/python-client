@@ -19,14 +19,8 @@ class BloomCategory(object):
     def check_ip(self, ip, check_suspicious=True, check_predicted=True,
                  check_malicious=True):
         value = ip
-<<<<<<< Updated upstream
         if type(value) != str and six.PY2:
             raise RuntimeError("Only accepts str")
-=======
-        if type(value) == str and six.PY2:
-            value = unicode(ip).encode('ascii')
-            
->>>>>>> Stashed changes
 
         # To reduce bloom filter checks we store ALL ips in has_intel
         # This way the majority of IPs will only have to check once.
