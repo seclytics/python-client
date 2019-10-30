@@ -27,6 +27,7 @@ def main():
     # initialize the client with your token
     access_token = options.access_token
     api_url = options.api_url
+    print(access_token)
     client = Seclytics(access_token=access_token, api_url=api_url)
 
     def process_batch(ips):
