@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from .portable_bloom import PortableBloom
 from enum import Enum
+import six
 
 
 

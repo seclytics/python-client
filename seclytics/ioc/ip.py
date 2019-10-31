@@ -13,3 +13,4 @@ class Ip(Cidr):
         if 'ip' not in self.intel:
             return None
         return self.intel['ip']['type']
+
