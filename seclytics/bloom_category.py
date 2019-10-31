@@ -4,6 +4,7 @@ from enum import Enum
 import six
 
 
+
 class Category(Enum):
     malicious = 1
     predicted = 2
@@ -19,8 +20,8 @@ class BloomCategory(object):
     def check_ip(self, ip, check_suspicious=True, check_predicted=True,
                  check_malicious=True):
         value = ip
-        if type(value) == str and six.PY2:
-            value = unicode(ip)
+        if type(value) != str and six.PY2:
+            raise RuntimeError("Only accepts str")
 
         # To reduce bloom filter checks we store ALL ips in has_intel
         # This way the majority of IPs will only have to check once.
