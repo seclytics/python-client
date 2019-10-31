@@ -27,13 +27,11 @@ def main():
     # initialize the client with your token
     access_token = options.access_token
     api_url = options.api_url
-    print(access_token)
-    client = Seclytics(access_token=access_token, api_url=api_url)
+    client = Seclytics(access_token, api_url=api_url)
 
     def process_batch(ips):
-        response = client._get_request('ips', {'ids': ips})
-        for row in response['data']:
-            print(json.dumps(row))
+        for node in client.ips(ips):
+            print(json.dumps(node.intel))
 
     batch = set()
     with FileInput(sys.stdin) as file_handle:

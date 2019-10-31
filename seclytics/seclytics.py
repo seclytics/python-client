@@ -56,7 +56,6 @@ class Seclytics(object):
             if isinstance(value, (list, set)):
                 params[field] = ','.join(value)
         response = self.session.get(url, params=params)
-        print(response.json())
         self._check_response_for_errors(response)
         data = response.json()
         return data
