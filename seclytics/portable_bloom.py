@@ -11,6 +11,6 @@ class PortableBloom(object):
         self.bloom = BloomFilter.open(path)
 
     def contains(self, value):
-        if six.PY2:
+        if six.PY2 and not isinstance(value, str):
             value = value.encode('ascii')
         return value in self.bloom
