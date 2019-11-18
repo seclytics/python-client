@@ -1,162 +1,190 @@
+from hashlib import sha1
+import six
 import requests
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
-from .ioc import Ip, Cidr, Asn, Host, FileHash
+from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
+from . import __version__
+from .node import Node
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 
 class Seclytics(object):
-    def __init__(self, access_token, api_url=None):
-        self.base_url = api_url or 'https://api.seclytics.com'
+    """Main Module for calling the Seclytics API
+
+    Attributes:
+        access_token (str): Seclytics Access Token
+        base_url (str): API URL
+        session (Session): requests session
+    """
+    def __init__(self, access_token,
+                 api_url='https://api.seclytics.com',
+                 session=None):
         self.access_token = access_token
-        self.session = requests.Session()
+        self.base_url = api_url
+        self.session = session
+        if not self.session:
+            self.session = requests.Session()
+
+
+        # set User-Agent to make notifying of new builds easier
+        client_user_agent = 'seclytics-python-client/{}'.format(
+            __version__.__version__
+        )
+        default_headers = {
+            'User-Agent': client_user_agent,
+            'Authorization': "Bearer {}".format(access_token)
+        }
+        self.session.headers.update(default_headers)
+        self.mount_ioc_lookups()
 
     def _get_request(self, path, params):
+        """Perform GET request for path and params
+
+        Handles API errors
+
+        Args:
+            path (str): the api path
+            params (str): api params
+        """
         url = ''.join((self.base_url, path))
-        data = None
-        params[u'access_token'] = self.access_token
-        if 'attributes' in params:
-            params[u'attributes'] = ','.join(params[u'attributes'])
-        if u'ids' in params:
-            if(type(params[u'ids']) == list or type(params[u'ids']) == set):
-                params[u'ids'] = ','.join(params[u'ids'])
+        # convert attributes to a comma delimited list
+        for (field, value) in six.iteritems(params):
+            if isinstance(value, (list, set)):
+                params[field] = ','.join(value)
         response = self.session.get(url, params=params)
+        self._check_response_for_errors(response)
+        data = response.json()
+        return data
+
+    @staticmethod
+    def _check_response_for_errors(response):
         if response.status_code == 401:
             raise InvalidAccessToken()
-        elif response.status_code == 429:
+        if response.status_code == 429:
             raise OverQuota()
-        elif response.status_code != 200:
+        if response.status_code != 200:
             msg = "Non 200 Response"
             if response.text:
                 msg = response.text
             raise ApiError(msg)
-        data = response.json()
-        return data
 
-    def _post_data(self, path, data={}):
-        url = ''.join((self.base_url, path))
-        params = {u'access_token': self.access_token}
+    def _post_data(self, path, params, data=None):
+        url = ''.join([self.base_url, path])
         response = self.session.post(url, params=params, json=data)
-        if response.status_code == 401:
-            raise InvalidAccessToken()
-        elif response.status_code == 429:
-            raise OverQuota()
-        elif response.status_code != 200:
-            msg = "Non 200 Response"
-            if response.text:
-                msg = response.text
-            raise ApiError(msg)
+        self._check_response_for_errors(response)
         data = response.json()
         return data
 
-    def _ioc_show(self, ioc_path, ioc_id, attributes=None):
-        path = u'/%s/%s' % (ioc_path, ioc_id)
+    def _ioc_show(self, ioc_path, ioc_id, fields=None):
+        path = '/%s/%s' % (ioc_path, ioc_id)
         params = {}
-        if attributes:
-            params[u'attributes'] = attributes
+        if fields:
+            params['fields'] = fields
         response = self._get_request(path, params)
         if 'error' in response:
             return RuntimeError(response['error']['message'])
-        return response
+        return Node.build_for_row(self, response)
+
+    def _ioc_index(self, ioc_path, iocs, fields=None):
+        path = '/%s/' % ioc_path
+        params = {'ids': iocs}
+        if fields:
+            params['fields'] = fields
+        response = self._get_request(path, params)
+        if 'data' not in response:
+            return
+
+        for row in response['data']:
+            yield Node.build_for_row(self, row)
 
     def bulk_api_download(self, name, data_dir=None):
-        params = {u'access_token': self.access_token}
         filename = name
-        if data_dir is not None:
+        if data_dir:
             filename = '/'.join([data_dir, filename])
         path = '/bulk/%s' % name
         url = ''.join((self.base_url, path))
-        response = self.session.get(url, params=params, stream=True)
+        response = self.session.get(url, stream=True)
+        self._check_response_for_errors(response)
 
-        if response.status_code == 401:
-            raise InvalidAccessToken()
-        elif response.status_code == 429:
-            raise OverQuota()
-        elif response.status_code != 200:
-            raise RuntimeError(response.status)
-
-        with open(filename, 'wb') as f:
+        with open(filename, 'wb') as file_handle:
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
-                    f.write(chunk)
+                    file_handle.write(chunk)
         return filename
 
-    def ip(self, ip, attributes=None):
-        response = self._ioc_show('ips', ip, attributes=attributes)
-        return Node(Ip(self, response))
+    def _single_ioc_wrapper(self, endpoint):
+        def mounted_method(ioc, **kwargs):
+            return self._ioc_show(endpoint, ioc, **kwargs)
+        return mounted_method
 
-    def cidr(self, cidr, attributes=None):
-        response = self._ioc_show('cidrs', cidr, attributes=attributes)
-        return Node(Cidr(self, response))
+    def _multiple_iocs_wrapper(self, endpoint):
+        def mounted_method(iocs, **kwargs):
+            return self._ioc_index(endpoint, iocs, **kwargs)
+        return mounted_method
 
-    def asn(self, asn, attributes=None):
-        response = self._ioc_show('asns', asn, attributes=attributes)
-        return Node(Asn(self, response))
+    def mount_ioc_lookups(self):
+        single_iocs = [
+            ('ip', 'ips'),
+            ('cidr', 'cidrs'),
+            ('asn', 'asns'),
+            ('host', 'hosts'),
+            ('file', 'files'),
+            ('domain', 'domains'),
+        ]
+        for (method_name, endpoint) in single_iocs:
+            assert method_name != endpoint
+            setattr(self, method_name, self._single_ioc_wrapper(endpoint))
+            setattr(self, endpoint, self._multiple_iocs_wrapper(endpoint))
 
-    def host(self, host, attributes=None):
-        response = self._ioc_show('hosts', host, attributes=attributes)
-        return Node(Host(self, response))
+    def urls(self, urls, fields=None):
+        path = '/urls/hash'
+        params = {'fields': fields}
+        data = {'urls': urls}
+        response = self._post_data(path, params, data)
+        if 'data' not in response:
+            return
+        for row in response['data']:
+            yield Node.build_for_row(self, row)
 
-    def file(self, file_hash, attributes=None):
-        response = self._ioc_show('files', file_hash, attributes=attributes)
-        return Node(FileHash(self, response))
+    def hashed_urls(self, iocs, **kwargs):
+        hashed_urls = set()
+        for url in iocs:
+            parsed = urlparse(url.strip())
+            if not parsed.hostname:
+                continue
+            hashed_path = None
+            hashed_query = None
+            if six.PY2:
+                hashed_path = sha1(parsed.path).hexdigest()
+                hashed_query = sha1(parsed.query).hexdigest()
+            else:
+                hashed_path = sha1(parsed.path.encode('utf8')).hexdigest()
+                hashed_query = sha1(parsed.query.encode('utf8')).hexdigest()
 
-    def ips(self, ips, attributes=None):
-        path = u'/ips/'
-        params = {u'ids': ips}
-        if attributes:
-            params[u'attributes'] = attributes
+            hashed_url = '/'.join((parsed.hostname, hashed_path,
+                                   hashed_query))
+            hashed_urls.add(hashed_url)
+        return self._ioc_index('urls', hashed_urls, **kwargs)
+
+    def hosts_live_dns(self, hosts, fields=None):
+        path = '/hosts/live_dns/'
+        params = {'ids': hosts}
+        if fields:
+            params['attributes'] = fields
+        response = self._get_request(path, params)
+        return response
+
+    def cidr_ips(self, cidr, fields=None):
+        path = u'/cidrs/{}/ips/'.format(cidr)
+        params = {}
+        if fields:
+            params[u'attributes'] = fields
         response = self._get_request(path, params)
         if 'data' not in response:
             return
         for row in response['data']:
-            yield Node(Ip(self, row))
-
-    def hosts(self, ips, attributes=None):
-        path = u'/hosts/'
-        params = {u'ids': ips}
-        if attributes:
-            params[u'attributes'] = attributes
-        response = self._get_request(path, params)
-        if 'data' not in response:
-            return
-        for row in response['data']:
-            yield Node(Host(self, row))
-
-
-class Node(object):
-    '''
-    Node wraps each IOC so we can call connections without creating
-    circular dependencies.
-    '''
-    def __init__(self, obj):
-        '''
-        Wrapper constructor.
-        @param obj: object to wrap
-        '''
-        # wrap the object
-        self._wrapped_obj = obj
-
-    def __getattr__(self, attr):
-        # see if this object has attr
-        # NOTE do not use hasattr, it goes into
-        # infinite recurrsion
-        if attr in self.__dict__:
-            # this object has it
-            return getattr(self, attr)
-        # proxy to the wrapped object
-        return getattr(self._wrapped_obj, attr)
-
-    @property
-    def connections(self):
-        if 'connections' not in self.intel:
-            return
-        for edge in self.intel['connections']:
-            if edge['type'] == 'ip':
-                yield Node(Ip(self, edge))
-            elif edge['type'] == 'host':
-                yield Node(Host(self, edge))
-            elif edge['type'] == 'file':
-                yield Node(FileHash(self, edge))
-            elif edge['type'] == 'cidr':
-                yield Node(Cidr(self, edge))
-            elif edge['type'] == 'asn':
-                yield Node(Asn(self, edge))
+            yield Node.build_for_row(self, row)
