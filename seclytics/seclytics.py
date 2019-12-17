@@ -1,4 +1,5 @@
 from hashlib import sha1
+import os
 import six
 import requests
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
@@ -104,9 +105,10 @@ class Seclytics(object):
     def bulk_api_download(self, name, data_dir=None):
         filename = name
         if data_dir:
-            filename = '/'.join([data_dir, filename])
-        path = '/bulk/%s' % name
-        url = ''.join((self.base_url, path))
+            filename = os.path.join(data_dir, name)
+
+        api_path = '/bulk/%s' % name
+        url = self.base_url + api_path
         response = self.session.get(url, stream=True)
         self._check_response_for_errors(response)
 
