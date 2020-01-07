@@ -1,5 +1,4 @@
 from datetime import datetime
-from six import iteritems
 
 
 class Ioc(object):
@@ -131,7 +130,7 @@ class Ioc(object):
             return None
         
         min_ranking = None
-        for list_name, value in iteritems(rankings):
+        for list_name, value in rankings.items():
             if allowed_lists and list_name not in allowed_lists:
                 continue
             list_min = value.get(u'min', None)
