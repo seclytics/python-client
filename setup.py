@@ -33,8 +33,8 @@ about = {}
 with open(path.join(here, 'seclytics', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
-requires = ['requests', 'texttable', 'pprint', 'pybloomfiltermmap', 'ipaddress',
-            'six']
+requires = ['requests', 'texttable', 'pprint', 'pybloomfiltermmap',
+            'ipaddress']
 
 test_require = requires + ['pytest']
 

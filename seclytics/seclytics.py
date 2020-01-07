@@ -1,6 +1,6 @@
 from hashlib import sha1
 import os
-import six
+import sys
 import requests
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
 from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
@@ -53,7 +53,7 @@ class Seclytics(object):
         """
         url = ''.join((self.base_url, path))
         # convert attributes to a comma delimited list
-        for (field, value) in six.iteritems(params):
+        for (field, value) in params.items():
             if isinstance(value, (list, set)):
                 params[field] = ','.join(value)
         response = self.session.get(url, params=params)
@@ -160,12 +160,12 @@ class Seclytics(object):
                 continue
             hashed_path = None
             hashed_query = None
-            if six.PY2:
-                hashed_path = sha1(parsed.path).hexdigest()
-                hashed_query = sha1(parsed.query).hexdigest()
-            else:
+            if sys.version_info > (3, 0):
                 hashed_path = sha1(parsed.path.encode('utf8')).hexdigest()
                 hashed_query = sha1(parsed.query.encode('utf8')).hexdigest()
+            else:
+                hashed_path = sha1(parsed.path).hexdigest()
+                hashed_query = sha1(parsed.query).hexdigest()
 
             hashed_url = '/'.join((parsed.hostname, hashed_path,
                                    hashed_query))
