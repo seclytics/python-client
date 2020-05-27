@@ -35,8 +35,8 @@ class Ioc(object):
         context = self.intel[u'context']
         if kind in context:
             values = set([v
-                         for src, value in context[kind].items()
-                         for v in value])
+                          for src, value in context[kind].items()
+                          for v in value])
         return list(values)
 
     @property
@@ -63,14 +63,12 @@ class Ioc(object):
     @property
     def passive_dns(self):
         '''Passive DNS data for this IOC'''
-        if u'passive_dns' in self.intel:
-            return self.intel[u'passive_dns']
+        return self.intel.get(u'passive_dns')
 
     @property
     def predictions(self):
         '''Predictions that apply to this IOC'''
-        if u'predictions' in self.intel:
-            return self.intel[u'predictions']
+        return self.intel.get(u'predictions')
 
     @property
     def predicted(self):
@@ -90,13 +88,12 @@ class Ioc(object):
         prediction = self.intel[u'prediction']
         return datetime.strptime(prediction[u'predicted_at'], self.time_fmt)
 
-    
     @property
     def first_reported_at(self):
         '''The first time this IOC has been seen by our threat intel'''
 
         if u'history' not in self.intel:
-            return None 
+            return None
         history = self.intel[u'history']
         if u'first_seen_at' not in history:
             return None
@@ -118,7 +115,7 @@ class Ioc(object):
         '''Returns the whitelist message'''
         if u'whitelist' in self.intel:
             return self.intel[u'whitelist']
-    
+
     @property
     def rankings(self):
         if u'rankings' in self.intel:
@@ -128,18 +125,18 @@ class Ioc(object):
         rankings = self.rankings
         if rankings is None:
             return None
-        
+
         min_ranking = None
         for list_name, value in rankings.items():
             if allowed_lists and list_name not in allowed_lists:
                 continue
             list_min = value.get(u'min', None)
-            if list_min and (min_ranking is None or int(list_min) < min_ranking):
+            if(list_min and
+               (min_ranking is None or int(list_min) < min_ranking)):
                 min_ranking = int(list_min)
 
         return min_ranking
-        
-    
+
     def record_threat_data(self, category=None, reason=None, feed=None):
         data = {'classification': 'malicious'}
         if category:

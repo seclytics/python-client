@@ -36,7 +36,6 @@ if __name__ == '__main__':
     if report.predicted:
         print("This IP was Predicted to be Malicious")
 
-
     # Who reported this?
     print("Reported By", report.reported_by)
 

@@ -3,6 +3,7 @@ from optparse import OptionParser
 from texttable import Texttable
 from pprint import pprint
 
+
 def get_options():
     # pass in the access_token via commandline
     parser = OptionParser()
@@ -27,6 +28,7 @@ def get_options():
         parser.error('name is required')
     return options
 
+
 def run():
     # initialize the client with your token
     options = get_options()
@@ -36,6 +38,7 @@ def run():
     names = options.name.split(',')
     for name in names:
         client.bulk_api_download(name, data_dir=options.data_dir)
+
 
 if __name__ == '__main__':
     run()

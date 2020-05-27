@@ -2,7 +2,8 @@
 """Sample script that uses BloomFilters to filter out IPs before calling
 the API.
 
-echo '51.255.139.200' | python -m seclytics.scripts.ip_filter --suspicious --malicious --predicted
+echo '51.255.139.200' | python -m seclytics.scripts.ip_filter
+    --suspicious --malicious --predicted
 """
 from optparse import OptionParser
 import sys
@@ -31,9 +32,8 @@ def get_options():
        not options.predicted and
        not options.suspicious):
         parser.error("Please specify at least one category")
-
-
     return options
+
 
 def main():
     """Using the options and stdin check the bloom filters for IOCs"""
