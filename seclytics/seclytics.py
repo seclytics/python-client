@@ -26,21 +26,29 @@ class Seclytics(object):
                  session=None):
         self.access_token = access_token
         self.base_url = api_url
+
+        # setup the session
+        # allow users to pass in a session for proxy support
         self.session = session
         if not self.session:
             self.session = requests.Session()
+        self.session.headers.update(self.default_headers)
+        self.mount_ioc_lookups()
 
+    @property
+    def default_headers(self):
+        """Set's default headers for the API
 
-        # set User-Agent to make notifying of new builds easier
+            * User-Agent to make notifying of new builds easier
+            * Authorization for auth
+        """
         client_user_agent = 'seclytics-python-client/{}'.format(
             __version__.__version__
         )
-        default_headers = {
+        return {
             'User-Agent': client_user_agent,
-            'Authorization': "Bearer {}".format(access_token)
+            'Authorization': "Bearer {}".format(self.access_token)
         }
-        self.session.headers.update(default_headers)
-        self.mount_ioc_lookups()
 
     def _get_request(self, path, params):
         """Perform GET request for path and params
@@ -63,6 +71,7 @@ class Seclytics(object):
 
     @staticmethod
     def _check_response_for_errors(response):
+        """Rasies an error depending on the status_code"""
         if response.status_code == 401:
             raise InvalidAccessToken()
         if response.status_code == 429:
@@ -103,6 +112,7 @@ class Seclytics(object):
             yield Node.build_for_row(self, row)
 
     def bulk_api_download(self, name, data_dir=None):
+        """Downloads a file from the bulk api"""
         filename = name
         if data_dir:
             filename = os.path.join(data_dir, name)

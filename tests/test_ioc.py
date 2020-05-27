@@ -4,7 +4,6 @@ from seclytics import Seclytics
 
 
 class TestAsnInfo():
-
     def test_empty_data(self):
         data = {}
         client = Seclytics(access_token='')
@@ -12,10 +11,10 @@ class TestAsnInfo():
         assert ioc.categories == []
 
     def test_prediction(self):
-        categories = {u'source1': [u'category1']}
+        categories = {'source1': ['category1']}
         data = {
-            u'context':{u'categories': categories},
-            u'predictions':[
+            'context':{'categories': categories},
+            'predictions':[
                 {
                     "category": "malware", 
                     "cidr": "188.165.92.121/29", 
@@ -31,8 +30,8 @@ class TestAsnInfo():
     
 
     def test_ioc_categories(self):
-        categories = {u'source1': [u'category1']}
-        data = {u'context':{u'categories': categories}}
+        categories = {'source1': ['category1']}
+        data = {'context':{'categories': categories}}
         client = Seclytics(access_token='')
         ioc = Ioc(client, data)
-        assert ioc.categories == [u'category1']
+        assert ioc.categories == ['category1']

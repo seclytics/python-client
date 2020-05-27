@@ -2,6 +2,7 @@
 from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
 from . import __version__
 
+
 class Node(object):
     """Node wraps each IOC
 
@@ -52,5 +53,7 @@ class Node(object):
             'url': Url
         }
         row_module = type_to_module.get(row['type'])
-        if row_module:
-            return Node(api_client, row_module(api_client, row))
+        if not row_module:
+            return None
+
+        return Node(api_client, row_module(api_client, row))

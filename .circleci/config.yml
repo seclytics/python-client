@@ -28,6 +28,8 @@ jobs:
 
       - run: sudo pip install --cache-dir /root/.pycache --upgrade pip pytest
       - run: sudo pip install --cache-dir /root/.pycache . --upgrade 
+      - run: sudo pip install --cache-dir /root/.pycache cython
+      - run: sudo pip install --cache-dir /root/.pycache pybloomfiltermmap3 
 
       # run test
       - run: py.test tests --junitxml=/tmp/circleci-test-results/junit.xml
@@ -52,6 +54,7 @@ jobs:
 
       - run: sudo pip install --cache-dir /root/.pycache --upgrade pip pytest
       - run: sudo pip install --cache-dir /root/.pycache . --upgrade 
+      - run: sudo pip install --cache-dir /root/.pycache enum pybloomfiltermmap
 
       # run test
       - run: py.test tests --junitxml=/tmp/circleci-test-results/junit.xml
