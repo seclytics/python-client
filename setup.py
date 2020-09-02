@@ -33,9 +33,13 @@ about = {}
 with open(path.join(here, 'seclytics', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
-requires = ['requests', 'texttable', 'pprint', 'ipaddress']
+requires = ['requests', 'texttable', 'ipaddress', 'pathlib']
 
-test_require = requires + ['pytest']
+test_require = requires + ['pytest', 'requests-mock']
+
+extras = {
+    'test': test_require
+}
 
 setup(
     name=about['__title__'],
@@ -71,4 +75,5 @@ setup(
     license=about['__license__'],
     install_requires=requires,
     tests_require=test_require,
+    extras_require=extras
 )

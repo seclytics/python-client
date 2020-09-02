@@ -26,13 +26,13 @@ jobs:
       # 'See docs https://circleci.com/docs/2.0/artifacts/'
       - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
 
-      - run: sudo pip install --cache-dir /root/.pycache --upgrade pip pytest
-      - run: sudo pip install --cache-dir /root/.pycache . --upgrade 
-      - run: sudo pip install --cache-dir /root/.pycache cython
-      - run: sudo pip install --cache-dir /root/.pycache pybloomfiltermmap3 
+      - run: sudo pip install --upgrade pip
+      - run: sudo pip install --upgrade .[test]
+      - run: sudo pip install cython
+      - run: sudo pip install pybloomfiltermmap3 
 
       # run test
-      - run: py.test tests --junitxml=/tmp/circleci-test-results/junit.xml
+      - run: python -m pytest tests --junitxml=/tmp/circleci-test-results/junit.xml
 
       # Save test results
       - store_test_results:
@@ -52,12 +52,12 @@ jobs:
       # 'See docs https://circleci.com/docs/2.0/artifacts/'
       - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
 
-      - run: sudo pip install --cache-dir /root/.pycache --upgrade pip pytest
-      - run: sudo pip install --cache-dir /root/.pycache . --upgrade 
-      - run: sudo pip install --cache-dir /root/.pycache enum pybloomfiltermmap
+      - run: sudo pip install --upgrade pip
+      - run: sudo pip install --upgrade .[test] 
+      - run: sudo pip install enum pybloomfiltermmap
 
       # run test
-      - run: py.test tests --junitxml=/tmp/circleci-test-results/junit.xml
+      - run: python -m pytest tests --junitxml=/tmp/circleci-test-results/junit.xml
 
       # Save test results
       - store_test_results:
