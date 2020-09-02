@@ -1,7 +1,7 @@
 """Main seclytics endpoint."""
 from hashlib import sha1
 import sys
-from pathlib import Path
+import os
 import requests
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
 from . import __version__
@@ -207,15 +207,15 @@ class BulkDownload(object):
         """
         self.api = api
         self.endpoint = endpoint
-        self.data_dir = Path('')
+        self.data_dir = ''
         if data_dir:
-            self.data_dir = Path(data_dir)
+            self.data_dir = data_dir
 
     @property
     def filename(self):
         """Determine the file name."""
-        filename = Path(self.endpoint).name
-        return self.data_dir.joinpath(filename)
+        filename = os.path.basename(self.endpoint)
+        return os.path.join(self.data_dir, filename)
 
     @property
     def api_reponse(self):
@@ -229,7 +229,7 @@ class BulkDownload(object):
     def download(self):
         """Download API response to file."""
         response = self.api_reponse
-        with self.filename.open('wb') as file_handle:
+        with open(self.filename, 'wb') as file_handle:
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     file_handle.write(chunk)
