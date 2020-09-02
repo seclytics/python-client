@@ -33,7 +33,7 @@ about = {}
 with open(path.join(here, 'seclytics', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
-requires = ['requests', 'texttable', 'ipaddress', 'pathlib']
+requires = ['requests', 'texttable', 'ipaddress']
 
 test_require = requires + ['pytest', 'requests-mock']
 

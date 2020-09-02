@@ -41,7 +41,7 @@ class TestBulkDownload:
         
         file_path = api_client.bulk_api_download('test.json', '/tmp/')
         assert str(file_path) == '/tmp/test.json'
-        data = json.load(file_path.open('r'))
+        data = json.load(open(file_path, 'r'))
         assert data.get('name') == 'test.json'
         
     def test_download_private(self, test_requests):
@@ -49,7 +49,7 @@ class TestBulkDownload:
         api_client = Seclytics('')
         file_path = api_client.bulk_api_download('private/private_test.json', '/tmp/')
         assert str(file_path) == '/tmp/private_test.json'
-        data = json.load(file_path.open('r'))
+        data = json.load(open(file_path, 'r'))
         assert data.get('name') == 'private_test.json'
 
     def test_download_missing(self, test_requests):
