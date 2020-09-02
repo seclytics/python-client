@@ -1,4 +1,4 @@
-from .seclytics import Seclytics
+from .seclytics import Seclytics, BulkDownload
 import logging
 
 # Set default logging handler to avoid "No handler found" warnings.

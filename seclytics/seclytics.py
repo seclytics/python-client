@@ -1,9 +1,9 @@
+"""Main seclytics endpoint."""
 from hashlib import sha1
-import os
 import sys
+from pathlib import Path
 import requests
 from .exceptions import InvalidAccessToken, OverQuota, ApiError
-from .ioc import Ip, Cidr, Asn, Host, FileHash, Domain, Url
 from . import __version__
 from .node import Node
 
@@ -111,22 +111,9 @@ class Seclytics(object):
         for row in response['data']:
             yield Node.build_for_row(self, row)
 
-    def bulk_api_download(self, name, data_dir=None):
-        """Downloads a file from the bulk api"""
-        filename = name
-        if data_dir:
-            filename = os.path.join(data_dir, name)
-
-        api_path = '/bulk/%s' % name
-        url = self.base_url + api_path
-        response = self.session.get(url, stream=True)
-        self._check_response_for_errors(response)
-
-        with open(filename, 'wb') as file_handle:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    file_handle.write(chunk)
-        return filename
+    def bulk_api_download(self, name, data_dir):
+        """Download a file from the bulk api."""
+        return BulkDownload(self, name, data_dir).download()
 
     def _single_ioc_wrapper(self, endpoint):
         def mounted_method(ioc, **kwargs):
@@ -139,6 +126,7 @@ class Seclytics(object):
         return mounted_method
 
     def mount_ioc_lookups(self):
+        """Set the ioc lookup attributes."""
         single_iocs = [
             ('ip', 'ips'),
             ('cidr', 'cidrs'),
@@ -153,6 +141,7 @@ class Seclytics(object):
             setattr(self, endpoint, self._multiple_iocs_wrapper(endpoint))
 
     def urls(self, urls, fields=None):
+        """Get URL data."""
         path = '/urls/hash'
         params = {'fields': fields}
         data = {'urls': urls}
@@ -163,6 +152,7 @@ class Seclytics(object):
             yield Node.build_for_row(self, row)
 
     def hashed_urls(self, iocs, **kwargs):
+        """Get URL data by hash."""
         hashed_urls = set()
         for url in iocs:
             parsed = urlparse(url.strip())
@@ -183,6 +173,7 @@ class Seclytics(object):
         return self._ioc_index('urls', hashed_urls, **kwargs)
 
     def hosts_live_dns(self, hosts, fields=None):
+        """Get live dns for hosts."""
         path = '/hosts/live_dns/'
         params = {'ids': hosts}
         if fields:
@@ -191,7 +182,8 @@ class Seclytics(object):
         return response
 
     def cidr_ips(self, cidr, fields=None):
-        path = u'/cidrs/{}/ips/'.format(cidr)
+        """Get all the IPs for a CIDR."""
+        path = '/cidrs/{}/ips/'.format(cidr)
         params = {}
         if fields:
             params[u'attributes'] = fields
@@ -200,3 +192,45 @@ class Seclytics(object):
             return
         for row in response['data']:
             yield Node.build_for_row(self, row)
+
+
+class BulkDownload(object):
+    """Download files from the bulk endpoint."""
+
+    def __init__(self, api, endpoint, data_dir):
+        """Create a bulk download object.
+
+        Parameters:
+            api: the seclytics API client
+            endpoint: the item we want to download
+            data_dir: the dir we want to download to
+        """
+        self.api = api
+        self.endpoint = endpoint
+        self.data_dir = Path('')
+        if data_dir:
+            self.data_dir = Path(data_dir)
+
+    @property
+    def filename(self):
+        """Determine the file name."""
+        filename = Path(self.endpoint).name
+        return self.data_dir.joinpath(filename)
+
+    @property
+    def api_reponse(self):
+        """Get the API response."""
+        api_path = '/bulk/%s' % self.endpoint
+        url = self.api.base_url + api_path
+        response = self.api.session.get(url, stream=True)
+        self.api._check_response_for_errors(response)
+        return response
+
+    def download(self):
+        """Download API response to file."""
+        response = self.api_reponse
+        with self.filename.open('wb') as file_handle:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    file_handle.write(chunk)
+        return self.filename
