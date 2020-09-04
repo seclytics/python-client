@@ -220,13 +220,11 @@ class BulkDownload(object):
     @property
     def filename(self):
         """Determine the file name."""
-        print(self.endpoint)
         filename = self.endpoint.replace('/', '_')
         if self.endpoint.startswith('/bulk'):
             filename = os.path.basename(self.endpoint)
         elif self.endpoint.endswith('/download'):
             filename = os.path.basename(self.endpoint[:-9])
-        print(filename)
         return os.path.join(self.data_dir, filename)
 
     @property
