@@ -111,9 +111,15 @@ class Seclytics(object):
         for row in response['data']:
             yield Node.build_for_row(self, row)
 
-    def bulk_api_download(self, name, data_dir):
+    def bulk_api_download(self, name, data_dir='/tmp/'):
         """Download a file from the bulk api."""
-        return BulkDownload(self, name, data_dir).download()
+        endpoint = '/bulk/' + name
+        return BulkDownload(self, endpoint, data_dir).download()
+
+    def binary_download(self, file_hash, data_dir='/tmp/'):
+        """Download a binary sample."""
+        endpoint = '/files/%s/download' % file_hash
+        return BulkDownload(self, endpoint, data_dir).download()
 
     def _single_ioc_wrapper(self, endpoint):
         def mounted_method(ioc, **kwargs):
@@ -214,13 +220,17 @@ class BulkDownload(object):
     @property
     def filename(self):
         """Determine the file name."""
-        filename = os.path.basename(self.endpoint)
+        filename = self.endpoint.replace('/', '_')
+        if self.endpoint.startswith('/bulk'):
+            filename = os.path.basename(self.endpoint)
+        elif self.endpoint.endswith('/download'):
+            filename = os.path.basename(self.endpoint[:-9])
         return os.path.join(self.data_dir, filename)
 
     @property
     def api_reponse(self):
         """Get the API response."""
-        api_path = '/bulk/%s' % self.endpoint
+        api_path = self.endpoint
         url = self.api.base_url + api_path
         response = self.api.session.get(url, stream=True)
         self.api._check_response_for_errors(response)
