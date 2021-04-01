@@ -37,38 +37,42 @@ class BloomCategory(object):
         To reduce bloom filter checks we store ALL ips in has_intel
         This way the majority of IPs will only have to check once.
         """
-        value = self.format_ip(ip_addr)
-
-        # Requires all 3 bloom filters
-        if not (self.malicious and self.predicted and self.has_intel):
-            raise Exception("Missing bloom filter, please download"
-                    " all bloom filters.")
-
-        if self.has_intel.contains(value):
-            if check_predicted and self.predicted.contains(value):
-                return Category.predicted
-            if check_malicious and self.malicious.contains(value):
-                return Category.malicious
-            if check_suspicious:
-                return Category.suspicious
+        if not self.check_has_intel(ip_addr):
+            return None
+        if check_predicted and self.check_predicted(ip_addr):
+            return Category.predicted
+        if check_malicious and self.check_malicious(ip_addr):
+            return Category.malicious
+        if check_suspicious:
+            return Category.suspicious
         return None
+
+    def check_has_intel(self, ip_addr):
+        """Check if IP is predicted."""
+        if not self.has_intel:
+            raise Exception("Missing required threat intel bloom filter.")
+        value = self.format_ip(ip_addr)
+        return self.has_intel.contains(value)
 
     def check_predicted(self, ip_addr):
         """Check if IP is predicted."""
-        if not self.predicted:
-            raise Exception("Missing predicted ip bloom filter.")
-        value = self.format_ip(ip_addr)
-        if self.predicted.contains(value):
-            return Category.predicted
-        return None
+        return self.check_on_bloom(Category.predicted, ip_addr)
 
     def check_malicious(self, ip_addr):
         """Check if IP is malicious."""
-        if not self.malicious:
-            raise Exception("Missing malicious ip bloom filter.")
+        return self.check_on_bloom(Category.malicious, ip_addr)
+
+    def check_on_bloom(self, category, ip_addr):
+        """Check on either malicious or predicted ip bloom."""
+        if category == Category.malicious:
+            bloom = self.malicious
+        elif category == Category.predicted:
+            bloom = self.predicted
+        if not bloom:
+            raise Exception("Missing required bloom filter.")
         value = self.format_ip(ip_addr)
-        if self.malicious.contains(value):
-            return Category.malicious
+        if bloom.contains(value):
+            return category
         return None
 
     @staticmethod
