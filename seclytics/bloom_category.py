@@ -37,15 +37,18 @@ class BloomCategory(object):
         To reduce bloom filter checks we store ALL ips in has_intel
         This way the majority of IPs will only have to check once.
         """
+        ret = None
         if not self.check_has_intel(ip_addr):
-            return None
+            # No intel here, return None
+            return ret
+        # Determine what kind of intel we have
         if check_predicted and self.check_predicted(ip_addr):
-            return Category.predicted
-        if check_malicious and self.check_malicious(ip_addr):
-            return Category.malicious
-        if check_suspicious:
-            return Category.suspicious
-        return None
+            ret = Category.predicted
+        elif check_malicious and self.check_malicious(ip_addr):
+            ret = Category.malicious
+        elif check_suspicious:
+            ret = Category.suspicious
+        return ret
 
     def check_has_intel(self, ip_addr):
         """Check if IP is predicted."""
