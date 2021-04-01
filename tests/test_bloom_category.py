@@ -59,13 +59,16 @@ class TestBloomCategory(object):
         # make sure all our IPs are in the bloom
         for ip_addr in malicious_ips:
             assert category.check_ip(ip_addr)
+            assert category.check_malicious(ip_addr)
         for ip_addr in all_ips:
             assert category.check_ip(ip_addr)
         for ip_addr in predicted_ips:
             assert category.check_ip(ip_addr)
+            assert category.check_predicted(ip_addr)
             ip_digit = None
             if sys.version_info < (3, 0):
                 ip_digit = str(int(ipaddress.IPv4Address(unicode(ip_addr))))
             else:
                 ip_digit = str(int(ipaddress.IPv4Address(ip_addr)))
             assert category.check_ip(ip_digit)
+            assert category.check_predicted(ip_digit)

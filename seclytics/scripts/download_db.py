@@ -37,6 +37,7 @@ def run():
     client = Seclytics(access_token=access_token, api_url=api_url)
     names = options.name.split(',')
     for name in names:
+        print(f'Downloading: {name} ...')
         client.bulk_api_download(name, data_dir=options.data_dir)
 
 

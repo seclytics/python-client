@@ -21,10 +21,14 @@ class Category(Enum):
 class BloomCategory(object):
     """Loads the three bloomfilters and provides a way to check ips
     """
-    def __init__(self, malicious_path, has_intel_path, predicted_path):
-        self.malicious = PortableBloom(malicious_path)
-        self.predicted = PortableBloom(predicted_path)
-        self.has_intel = PortableBloom(has_intel_path)
+    def __init__(self, malicious_path=None, has_intel_path=None,
+                 predicted_path=None):
+        self.malicious = PortableBloom(malicious_path)\
+                if malicious_path else None
+        self.predicted = PortableBloom(predicted_path)\
+                if predicted_path else None
+        self.has_intel = PortableBloom(has_intel_path)\
+                if has_intel_path else None
 
     def check_ip(self, ip_addr, check_suspicious=True, check_predicted=True,
                  check_malicious=True):
@@ -35,6 +39,11 @@ class BloomCategory(object):
         """
         value = self.format_ip(ip_addr)
 
+        # Requires all 3 bloom filters
+        if not (self.malicious and self.predicted and self.has_intel):
+            raise Exception("Missing bloom filter, please download"
+                    " all bloom filters.")
+
         if self.has_intel.contains(value):
             if check_predicted and self.predicted.contains(value):
                 return Category.predicted
@@ -42,6 +51,24 @@ class BloomCategory(object):
                 return Category.malicious
             if check_suspicious:
                 return Category.suspicious
+        return None
+
+    def check_predicted(self, ip_addr):
+        """Check if IP is predicted."""
+        if not self.predicted:
+            raise Exception("Missing predicted ip bloom filter.")
+        value = self.format_ip(ip_addr)
+        if self.predicted.contains(value):
+            return Category.predicted
+        return None
+
+    def check_malicious(self, ip_addr):
+        """Check if IP is malicious."""
+        if not self.malicious:
+            raise Exception("Missing malicious ip bloom filter.")
+        value = self.format_ip(ip_addr)
+        if self.malicious.contains(value):
+            return Category.malicious
         return None
 
     @staticmethod
