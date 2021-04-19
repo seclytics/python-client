@@ -111,15 +111,15 @@ class Seclytics(object):
         for row in response['data']:
             yield Node.build_for_row(self, row)
 
-    def bulk_api_download(self, name, data_dir='/tmp/'):
+    def bulk_api_download(self, name, data_dir='/tmp/', proxies=None):
         """Download a file from the bulk api."""
         endpoint = '/bulk/' + name
-        return BulkDownload(self, endpoint, data_dir).download()
+        return BulkDownload(self, endpoint, data_dir, proxies=proxies).download()
 
-    def binary_download(self, file_hash, data_dir='/tmp/'):
+    def binary_download(self, file_hash, data_dir='/tmp/', proxies=None):
         """Download a binary sample."""
         endpoint = '/files/%s/download' % file_hash
-        return BulkDownload(self, endpoint, data_dir).download()
+        return BulkDownload(self, endpoint, data_dir, proxies=proxies).download()
 
     def _single_ioc_wrapper(self, endpoint):
         def mounted_method(ioc, **kwargs):
@@ -203,7 +203,7 @@ class Seclytics(object):
 class BulkDownload(object):
     """Download files from the bulk endpoint."""
 
-    def __init__(self, api, endpoint, data_dir):
+    def __init__(self, api, endpoint, data_dir, proxies=None):
         """Create a bulk download object.
 
         Parameters:
@@ -216,6 +216,7 @@ class BulkDownload(object):
         self.data_dir = ''
         if data_dir:
             self.data_dir = data_dir
+        self.proxies = proxies
 
     @property
     def filename(self):
@@ -232,7 +233,7 @@ class BulkDownload(object):
         """Get the API response."""
         api_path = self.endpoint
         url = self.api.base_url + api_path
-        response = self.api.session.get(url, stream=True)
+        response = self.api.session.get(url, stream=True, proxies=self.proxies)
         self.api._check_response_for_errors(response)
         return response
 
