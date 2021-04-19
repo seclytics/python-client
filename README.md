@@ -38,6 +38,22 @@ report.passive_dns
 
 ```
 
+## Usage with proxy
+
+Set the proxy using the requests session.
+
+```python
+import requests
+from seclytics import Seclytics
+
+session = requests.Session()
+session.proxies = {'http': 'http://proxy', 'https': 'https://proxy'}
+access_token = 'YOUR_ACCESS_TOKEN'
+
+client = Seclytics(access_token=access_token, session=session)
+```
+
+
 ## Bloom Filter Usage
 
 **Requires Access To Our Bloom Filters**
