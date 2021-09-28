@@ -20,12 +20,15 @@ class Seclytics(object):
         access_token (str): Seclytics Access Token
         base_url (str): API URL
         session (Session): requests session
+        timeout (int): default timeout
     """
     def __init__(self, access_token,
                  api_url='https://api.seclytics.com',
-                 session=None):
+                 session=None,
+                 timeout=5):
         self.access_token = access_token
         self.base_url = api_url
+        self.timeout = timeout
 
         # setup the session
         # allow users to pass in a session for proxy support
@@ -64,7 +67,7 @@ class Seclytics(object):
         for (field, value) in params.items():
             if isinstance(value, (list, set)):
                 params[field] = ','.join(value)
-        response = self.session.get(url, params=params)
+        response = self.session.get(url, params=params, timeout=self.timeout)
         self._check_response_for_errors(response)
         data = response.json()
         return data
@@ -84,7 +87,8 @@ class Seclytics(object):
 
     def _post_data(self, path, params, data=None):
         url = ''.join([self.base_url, path])
-        response = self.session.post(url, params=params, json=data)
+        response = self.session.post(url, params=params, json=data,
+                                     timeout=self.timeout)
         self._check_response_for_errors(response)
         data = response.json()
         return data
@@ -232,7 +236,8 @@ class BulkDownload(object):
         """Get the API response."""
         api_path = self.endpoint
         url = self.api.base_url + api_path
-        response = self.api.session.get(url, stream=True)
+        response = self.api.session.get(url, stream=True,
+                                        timeout=self.api.timeout)
         self.api._check_response_for_errors(response)
         return response
 
