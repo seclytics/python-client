@@ -7,17 +7,17 @@ jobs:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
-      - image: circleci/python:3.7.5
+      - image: circleci/python:3.9.5
     steps:
       # Machine Setup
       - checkout
-  build_python_37:
+  build_python_3:
     parallelism: 1
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
-      - image: circleci/python:3.7.5
+      - image: circleci/python:3.9.5
     steps:
       # Machine Setup
       - checkout
@@ -67,11 +67,11 @@ workflows:
   build-deploy:
     jobs:
       - build_python_27
-      - build_python_37
+      - build_python_3
       - deploy:
           requires:
             - build_python_27
-            - build_python_37
+            - build_python_3
           filters:
             branches:
               only: master
