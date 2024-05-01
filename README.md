@@ -14,7 +14,7 @@ pip install git+git://github.com/seclytics/python-client.git --upgrade
 ```bash
 pip install cython
 pip install pybloomfiltermmap3
-pip install git+git://github.com/seclytics/python-client.git --upgrade
+pip install git+https://github.com/seclytics/python-client.git --upgrade
 ```
 
 
