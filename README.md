@@ -9,12 +9,12 @@ pip install enum pybloomfiltermmap
 pip install git+git://github.com/seclytics/python-client.git --upgrade
 ```
 
-## Installation for python 3.7
+## Installation for python 3.7 - 3.12
 
 ```bash
 pip install cython
 pip install pybloomfiltermmap3
-pip install git+git://github.com/seclytics/python-client.git --upgrade
+pip install git+https://github.com/seclytics/python-client.git --upgrade
 ```
 
 
