@@ -1,6 +1,6 @@
-# Seclytics API Python Client 
+# Augur Python Client
 
-Python module for interacting with the Seclytics API.
+Python module for using Augur's bloom filter for IP patching.
 
 ## Installation for python 2.7
 
