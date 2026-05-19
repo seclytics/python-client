@@ -1,4 +1,4 @@
-# Seclytics API Python Client 
+# Augur Python Client for IP matching
 
 Python module for interacting with the Seclytics API.
 
